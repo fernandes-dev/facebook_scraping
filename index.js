@@ -9,6 +9,8 @@ require('dotenv/config')
 const email = process.env.LOGIN
 const pass = process.env.PASS
 
+const server = require('http').createServer(app)
+
 app.use(bodyParser.json())
 
 router.get('/', async (req, res) => {
@@ -93,4 +95,8 @@ router.post('/sorteio', async (req, res) => {
 })
 
 app.use('/', router)
-app.listen(process.env.port || 30000)
+
+const port = process.env.port || 30000
+server.listen(port, () => {
+  console.log(`rodando na porta ${port}`);
+})
