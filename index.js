@@ -1,6 +1,7 @@
 const express = require('express')
 const app = express()
 const path = require('path')
+const cors = require('cors')
 const router = express.Router()
 const bodyParser = require('body-parser')
 const puppeteer = require('puppeteer');
@@ -12,6 +13,8 @@ const pass = process.env.PASS
 const server = require('http').createServer(app)
 
 app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
+app.use(cors())
 
 router.get('/', async (req, res) => {
   res.sendFile(path.join(__dirname + '/index.html'))
@@ -37,15 +40,14 @@ function newUrl(url) {
 
 
 router.post('/sorteio', async (req, res) => {
-
-  const { link } = req.body
-
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-  });
-
   try {
+    const { link } = req.body
+
+    const browser = await puppeteer.launch({
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+
+
     const page = await browser.newPage();
     page.setViewport({ width: 1200, height: 926 });
 
@@ -53,51 +55,51 @@ router.post('/sorteio', async (req, res) => {
 
     await page.type('#email', email);
     await page.type('#pass', pass);
-  } catch (error) {
-    return res.status(400).send({ error: "erro antes de logar", error })
-  }
 
-  try {
-    await page.click('#u_0_b');
-  } catch (error) {
-    await page.click('#u_0_4');
-  }
-
-  await page.waitForNavigation();
-
-  await page.goto(newUrl(link));
-
-  let items = []
-  let items2 = []
-  let next = true
-
-  while (next) {
-
-    items = await page.evaluate(extractItems)
-
-    if ((await page.$('#see_next_553177888913884')) !== null) {
-      await page.click('#see_next_553177888913884')
-
-      await page.waitFor(2000)
+    try {
+      await page.click('#u_0_b');
+    } catch (error) {
+      await page.click('#u_0_4');
     }
 
-    items2 = await page.evaluate(extractItems)
+    await page.waitForNavigation();
 
-    if (items.length >= items2.length) {
-      next = false
+    await page.goto(newUrl(link));
+
+    let items = []
+    let items2 = []
+    let next = true
+
+    while (next) {
+
+      items = await page.evaluate(extractItems)
+
+      if ((await page.$('#see_next_553177888913884')) !== null) {
+        await page.click('#see_next_553177888913884')
+
+        await page.waitFor(2000)
+      }
+
+      items2 = await page.evaluate(extractItems)
+
+      if (items.length >= items2.length) {
+        next = false
+      }
     }
+
+    const html = []
+    items.forEach((item) => {
+      html.push(`<div class="item">${item}</div>`)
+    })
+
+    fs.writeFileSync('./imprimir/items.html', html.join("\n"));
+
+    await browser.close();
+
+    return res.sendFile(path.join(__dirname + '/imprimir/items.html'))
+  } catch (error) {
+    return res.send({ message: "erro", error })
   }
-
-  const html = []
-  items.forEach((item) => {
-    html.push(`<div class="item">${item}</div>`)
-  })
-
-  fs.writeFileSync('./imprimir/items.html', html.join("\n"));
-
-  await browser.close();
-
-  return res.sendFile(path.join(__dirname + '/imprimir/items.html'))
 })
 
 app.use('/', router)

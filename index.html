@@ -60,6 +60,7 @@
         document.getElementById('load').innerHTML = ""
         window.print()
       }).catch(err => {
+        console.log(err);
         document.getElementById('load').innerHTML = "Erro na solicitação, tente novamente"
       })
     })
