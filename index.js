@@ -92,11 +92,14 @@ router.post('/sorteio', async (req, res) => {
       html.push(`<div class="item">${item}</div>`)
     })
 
-    fs.writeFileSync('./imprimir/items.html', html.join("\n"));
+    // fs.writeFileSync('./imprimir/items.html', html.join("\n"));
 
     await browser.close();
 
-    return res.sendFile(path.join(__dirname + '/imprimir/items.html'))
+    // return res.sendFile(path.join(__dirname + '/imprimir/items.html'))
+    const object = html.join("\n")
+
+    return res.json(object)
   } catch (error) {
     return res.send({ message: "erro", error })
   }
