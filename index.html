@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <title>Imprimir Sorteio Facebook</title>
+  <style>
+    #print {
+      display: none;
+    }
+    .page {
+      display: block;
+    }
+
+    @page{
+      size: portrait;
+      margin: 5px;
+      size: 60mm 50mm;
+    }
+
+    @media print {
+      .page {
+        display: none;
+      }
+      #print {
+        display: block;
+      }
+      .item {
+        page-break-after: always;
+        border: solid 2px black;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <label for="link">Digite a URL do Sorteio no Facebook</label>
+    <input type="text" name="link" id="link">
+    <button id="send" type="submit">Obter Comentários</button>
+    <div id="load"></div>
+  </div>
+  <div id="print">
+  </div>
+
+  <script>
+    document.getElementById("send").addEventListener('click', e => {
+      e.preventDefault()
+      const link = document.getElementById('link').value
+      document.getElementById('load').innerHTML = "Aguarde..."
+      axios({
+        method: 'post',
+        url: 'http://localhost:30000/sorteio',
+        data: {
+          link
+        }
+      }).then(resp => {
+        console.log(resp.data);
+        document.getElementById('print').innerHTML = resp.data
+        document.getElementById('load').innerHTML = ""
+        window.print()
+      }).catch(err => {
+        document.getElementById('load').innerHTML = "Erro na solicitação, tente novamente"
+      })
+    })
+  </script>
+</body>
+</html>
