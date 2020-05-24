@@ -96,7 +96,7 @@ router.post('/sorteio', async (req, res) => {
 
 app.use('/', router)
 
-const port = process.env.port || 30000
+const port = process.env.PORT || 30000
 server.listen(port, () => {
   console.log(`rodando na porta ${port}`);
 })
