@@ -44,13 +44,19 @@ router.post('/sorteio', async (req, res) => {
     headless: true,
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });
-  const page = await browser.newPage();
-  page.setViewport({ width: 1200, height: 926 });
 
-  await page.goto("https://www.facebook.com/");
+  try {
+    const page = await browser.newPage();
+    page.setViewport({ width: 1200, height: 926 });
 
-  await page.type('#email', email);
-  await page.type('#pass', pass);
+    await page.goto("https://www.facebook.com/");
+
+    await page.type('#email', email);
+    await page.type('#pass', pass);
+  } catch (error) {
+    return res.status(400).send({ error: "erro antes de logar", error })
+  }
+
   try {
     await page.click('#u_0_b');
   } catch (error) {
